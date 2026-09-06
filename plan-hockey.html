@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Plan hockey</title>
+<style>
+
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --fondo: #0A1E28;
+  --sup: #102C38;
+  --sup2: #16394A;
+  --linea: #23505F;
+  --texto: #E8F1F2;
+  --tenue: #8AA6B0;
+  --bola: #F2C230;
+  --tipo: Archivo, "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+.hk {
+  font-family: var(--tipo);
+  background: var(--fondo);
+  color: var(--texto);
+  min-height: 100vh;
+  padding-bottom: 3rem;
+  -webkit-font-smoothing: antialiased;
+}
+.hk *, .hk *::before, .hk *::after { box-sizing: border-box; }
+.hk button { font-family: inherit; cursor: pointer; }
+.hk button:focus-visible, .hk input:focus-visible, .hk a:focus-visible {
+  outline: 2px solid var(--bola); outline-offset: 2px;
+}
+.hk-carga { display: flex; align-items: center; justify-content: center;
+  color: var(--tenue); font-size: .9rem; }
+
+.hk-top {
+  position: sticky; top: 0; z-index: 10;
+  background: linear-gradient(180deg, var(--fondo) 76%, rgba(10,30,40,.94) 100%);
+  padding: .9rem 1rem .7rem; border-bottom: 1px solid var(--linea);
+}
+.hk-nav { display: flex; align-items: center; gap: .5rem; }
+.hk-cab { flex: 1; text-align: center; }
+.hk-mes { font-size: .7rem; font-weight: 600; color: var(--tenue); letter-spacing: .08em; }
+.hk-rango { font-size: 1.5rem; font-weight: 800; letter-spacing: -.02em;
+  font-variant-numeric: tabular-nums; line-height: 1.1; }
+.hk-flecha { background: none; border: 1px solid var(--linea); color: var(--texto);
+  width: 2.1rem; height: 2.1rem; border-radius: 50%; font-size: 1.3rem; line-height: 1;
+  padding: 0 0 .18em; display: grid; place-items: center; flex: none; }
+.hk-flecha:disabled { opacity: .28; cursor: default; }
+.hk-etiqueta { text-align: center; font-size: .78rem; color: var(--tenue);
+  margin-top: .15rem; line-height: 1.3; }
+
+.hk-tira { display: flex; gap: .3rem; margin: .75rem 0 .6rem; }
+.hk-dia { flex: 1; background: none; border: 0; padding: .35rem 0 .3rem;
+  display: flex; flex-direction: column; align-items: center; gap: .32rem; border-radius: 4px; }
+.hk-dia-letra { font-size: .68rem; font-weight: 600; color: var(--tenue); }
+.hk-punto { width: 9px; height: 9px; border-radius: 50%;
+  border: 1.5px solid var(--linea); background: transparent; }
+.hk-dia-pendiente .hk-punto { border-color: var(--dc); }
+.hk-dia-parcial .hk-punto { border-color: var(--dc);
+  background: linear-gradient(90deg, var(--dc) 50%, transparent 50%); }
+.hk-dia-completo .hk-punto { border-color: var(--dc); background: var(--dc); }
+.hk-dia-descanso .hk-punto { border: 0; height: 2px; width: 11px; border-radius: 0;
+  background: var(--linea); }
+.hk-dia-vacio .hk-punto { opacity: .3; }
+
+.hk-barra { height: 3px; background: var(--sup2); border-radius: 2px; overflow: hidden; }
+.hk-barra-int { height: 100%; background: var(--bola); border-radius: 2px; transition: width .3s ease; }
+.hk-resumen { display: flex; align-items: baseline; gap: .35rem; margin-top: .45rem;
+  font-size: .75rem; color: var(--tenue); }
+.hk-cifra { font-size: 1rem; font-weight: 800; color: var(--texto);
+  font-variant-numeric: tabular-nums; }
+.hk-guardando { margin-left: auto; color: var(--bola); font-size: .68rem; }
+.hk-error { margin-left: auto; color: #E8756B; font-size: .68rem; font-weight: 600; text-align: right; }
+
+.hk-nota-semana { margin: .85rem 1rem 0; padding: .7rem .8rem; background: var(--sup);
+  border-left: 2px solid var(--linea); font-size: .78rem; line-height: 1.5; color: var(--tenue); }
+
+.hk-ses { margin: 1.1rem 1rem 0; padding-left: .8rem;
+  border-left: 3px solid var(--tc, var(--linea)); }
+.hk-ses-ok { border-left-color: var(--bola); }
+.hk-ses-rest { border-left-style: dotted; border-left-color: var(--linea); }
+.hk-ses-cab { display: flex; justify-content: space-between; align-items: flex-start;
+  gap: .6rem; margin-bottom: .55rem; }
+.hk-ses-dia { font-size: .7rem; font-weight: 600; color: var(--tenue);
+  font-variant-numeric: tabular-nums; }
+.hk-ses-tit { margin: .1rem 0 0; font-size: .97rem; font-weight: 700;
+  line-height: 1.25; letter-spacing: -.01em; }
+.hk-ses-cont { font-size: .8rem; font-weight: 700; color: var(--tenue);
+  font-variant-numeric: tabular-nums; white-space: nowrap; padding-top: .5rem; }
+.hk-rest-txt { margin: 0; font-size: .8rem; color: var(--tenue); line-height: 1.45; }
+
+.hk-lista { list-style: none; margin: 0; padding: 0; }
+.hk-ej { border-top: 1px solid var(--linea); }
+.hk-ej:last-child { border-bottom: 1px solid var(--linea); }
+.hk-ej-fila { display: flex; gap: .65rem; padding: .6rem 0; align-items: flex-start; }
+.hk-check { flex: none; width: 26px; height: 26px; margin-top: .1rem;
+  border: 1.5px solid var(--linea); border-radius: 6px; background: transparent;
+  display: grid; place-items: center; padding: 0; }
+.hk-check-marca { width: 12px; height: 12px; border-radius: 3px; background: transparent; }
+.hk-ej-ok .hk-check { border-color: var(--bola); background: var(--bola); }
+.hk-ej-ok .hk-check-marca { background: var(--fondo);
+  clip-path: polygon(14% 46%, 0 60%, 40% 100%, 100% 22%, 86% 8%, 38% 70%);
+  width: 15px; height: 15px; border-radius: 0; }
+.hk-ej-cuerpo { flex: 1; min-width: 0; }
+.hk-ej-nombre { margin: 0; color: var(--texto); font-size: .87rem; font-weight: 500;
+  line-height: 1.35; }
+.hk-ej-ok .hk-ej-nombre { color: var(--tenue); }
+.hk-sust { color: #A97BE0; margin-right: .3rem; font-size: .7rem; }
+.hk-ej-datos { display: flex; align-items: center; gap: .45rem; margin-top: .4rem; }
+.hk-presc { font-size: .8rem; color: var(--tenue); font-variant-numeric: tabular-nums;
+  white-space: nowrap; }
+.hk-presc b { color: var(--texto); font-weight: 700; }
+.hk-kg { flex: 1; min-width: 0; background: var(--sup); color: var(--texto);
+  border: 1px solid var(--linea); border-radius: 5px; padding: .32rem .5rem;
+  font-size: .8rem; font-weight: 600; font-family: inherit; font-variant-numeric: tabular-nums; }
+.hk-btn-nota { flex: none; background: transparent; color: var(--bola);
+  border: 1px solid var(--bola); border-radius: 999px; padding: .3rem .62rem;
+  font-size: .7rem; font-weight: 700; line-height: 1; }
+.hk-ej-ok .hk-btn-nota { color: var(--tenue); border-color: var(--linea); }
+
+/* Ficha emergente */
+.hk-velo { position: fixed; inset: 0; z-index: 50; background: rgba(4,14,19,.72);
+  display: flex; align-items: flex-end; justify-content: center;
+  font-family: var(--tipo); color: var(--texto); -webkit-font-smoothing: antialiased; }
+.hk-velo *, .hk-velo *::before, .hk-velo *::after { box-sizing: border-box; }
+.hk-velo button { font-family: inherit; cursor: pointer; }
+.hk-velo button:focus-visible, .hk-velo a:focus-visible {
+  outline: 2px solid var(--bola); outline-offset: 2px; }
+.hk-ficha { width: 100%; max-width: 30rem; background: var(--sup);
+  border-top: 3px solid var(--bola); border-radius: 14px 14px 0 0;
+  padding: .7rem 1.15rem 1.5rem; max-height: 82vh; overflow-y: auto;
+  animation: hk-subir .22s ease-out; }
+@keyframes hk-subir { from { transform: translateY(14px); opacity: .6; } to { transform: none; opacity: 1; } }
+.hk-ficha-asa { width: 34px; height: 4px; border-radius: 2px; background: var(--linea);
+  margin: 0 auto .9rem; }
+.hk-ficha-tit { margin: 0 0 .5rem; font-size: 1.02rem; font-weight: 700; line-height: 1.3; }
+.hk-ficha-presc { margin: 0 0 .9rem; font-size: .82rem; color: var(--tenue);
+  font-variant-numeric: tabular-nums; display: flex; align-items: baseline; gap: .6rem; }
+.hk-ficha-presc b { color: var(--texto); font-weight: 700; }
+.hk-ficha-kg { color: var(--texto); font-weight: 600; }
+.hk-ficha-nota { margin: 0 0 1rem; font-size: .87rem; line-height: 1.6;
+  padding-left: .75rem; border-left: 2px solid var(--bola); }
+.hk-ficha-vacia { margin: 0 0 1rem; font-size: .84rem; color: var(--tenue); }
+.hk-video { display: inline-block; font-size: .8rem; font-weight: 600; color: var(--bola);
+  text-decoration: none; border-bottom: 1px solid currentColor; padding-bottom: 1px; }
+.hk-ficha-cerrar { display: block; width: 100%; margin-top: 1.3rem; padding: .72rem;
+  background: transparent; border: 1px solid var(--linea); border-radius: 8px;
+  color: var(--texto); font-size: .85rem; font-weight: 600; }
+
+.hk-pie { margin: 2.2rem 1rem 0; padding-top: 1rem; border-top: 1px solid var(--linea);
+  font-size: .7rem; color: var(--tenue); text-align: center; }
+@media (prefers-reduced-motion: reduce) {
+  .hk *, .hk-ficha { transition: none !important; animation: none !important; }
+}
+html, body { margin: 0; padding: 0; background: #0A1E28; }
+</style>
+</head>
+<body>
+<div id="raiz" class="hk"></div>
+<div id="capa-ficha"></div>
+
+<script>
+const DATA = {"L":["https://www.youtube.com/results?search_query=pogo%20jumps%20ankle%20stiffness%20sprint","https://www.youtube.com/results?search_query=goblet%20squat%20tecnica","https://www.youtube.com/results?search_query=bulgarian%20split%20squat%20tecnica","https://www.youtube.com/results?search_query=hip%20thrust%20barbell%20tecnica","https://www.youtube.com/results?search_query=press%20banca%20tecnica","https://www.youtube.com/results?search_query=press%20militar%20barra%20de%20pie","https://www.youtube.com/results?search_query=plancha%20abdominal%20tecnica","https://www.youtube.com/results?search_query=pallof%20press%20anti%20rotation","https://www.youtube.com/results?search_query=dynamic%20warm%20up%20sprint%20training","https://www.youtube.com/results?search_query=a%20skip%20drill%20sprint%20technique","https://www.youtube.com/results?search_query=ankling%20drill%20sprint","https://www.youtube.com/results?search_query=10m%20sprint%20acceleration%20start","https://www.youtube.com/results?search_query=romanian%20deadlift%20tecnica","https://www.youtube.com/results?search_query=walking%20lunges%20dumbbells","https://www.youtube.com/results?search_query=remo%20barra%20pendlay","https://www.youtube.com/results?search_query=dominadas%20tecnica%20pull%20ups","https://www.youtube.com/results?search_query=face%20pulls%20tecnica","https://www.youtube.com/results?search_query=dead%20bug%20abdominal%20ejercicio","https://www.youtube.com/results?search_query=copenhagen%20plank%20adductors","https://www.youtube.com/results?search_query=broad%20jump%20horizontal%20power%20acceleration","https://www.youtube.com/results?search_query=single%20leg%20romanian%20deadlift","https://www.youtube.com/results?search_query=one%20arm%20dumbbell%20row","https://www.youtube.com/results?search_query=cable%20wood%20chop%20polea","https://www.youtube.com/results?search_query=standing%20calf%20raise","https://www.youtube.com/results?search_query=fartlek%20running%20workout","https://www.youtube.com/results?search_query=back%20squat%20tecnica%20correcta","https://www.youtube.com/results?search_query=ab%20wheel%20rollout%20tecnica","https://www.youtube.com/results?search_query=carrera%20zona%202%20aerobic%20base","https://www.youtube.com/results?search_query=peso%20muerto%20convencional%20tecnica","https://www.youtube.com/results?search_query=reverse%20lunge%20dumbbells","https://www.youtube.com/results?search_query=plancha%20lateral%20side%20plank","https://www.youtube.com/results?search_query=front%20squat%20tecnica","https://www.youtube.com/results?search_query=push%20press%20tecnica","https://www.youtube.com/results?search_query=tempo%20run%20training","https://www.youtube.com/results?search_query=nordic%20hamstring%20curl","https://www.youtube.com/results?search_query=movilidad%20cadera%20isquios%20rutina","https://www.youtube.com/results?search_query=wall%20drill%20sprint%20mechanics%20acceleration","https://www.youtube.com/results?search_query=5m%20sprint%20first%20step%20acceleration%20hockey","https://www.youtube.com/results?search_query=bulgarian%20split%20squat%20bodyweight%20chair","https://www.youtube.com/results?search_query=single%20leg%20romanian%20deadlift%20backpack","https://www.youtube.com/results?search_query=decline%20push%20ups","https://www.youtube.com/results?search_query=pike%20push%20ups%20shoulders","https://www.youtube.com/results?search_query=inverted%20row%20bodyweight%20table","https://www.youtube.com/results?search_query=nordic%20curl%20no%20equipment%20partner","https://www.youtube.com/results?search_query=5-10-5%20pro%20agility%20shuttle%20drill","https://www.youtube.com/results?search_query=repeated%20sprint%20ability%20hockey%20training","https://www.youtube.com/results?search_query=bird%20dog%20ejercicio%20core","https://www.youtube.com/results?search_query=20m%20sprint%20acceleration","https://www.youtube.com/results?search_query=bounding%20plyometric%20horizontal%20sprint","https://www.youtube.com/results?search_query=reactive%20sprint%20start%20various%20positions%20hockey","https://www.youtube.com/results?search_query=pistol%20squat%20progresion","https://www.youtube.com/results?search_query=archer%20push%20ups%20progression","https://www.youtube.com/results?search_query=repeated%20shuttle%20sprint%20test%20hockey","https://www.youtube.com/results?search_query=skater%20jump%20lateral%20bound","https://www.youtube.com/results?search_query=dynamic%20warm%20up%20gym%20mobility","https://www.youtube.com/results?search_query=hang%20clean%20tecnica","https://www.youtube.com/results?search_query=cable%20rotational%20chop%20power%20athlete","https://www.youtube.com/results?search_query=short%20hill%20sprint%20acceleration","https://www.youtube.com/results?search_query=lateral%20lunge%20tecnica","https://www.youtube.com/results?search_query=broad%20jump%20into%20sprint%20acceleration","https://www.youtube.com/results?search_query=medicine%20ball%20chest%20pass%20sprint%20start","https://www.youtube.com/results?search_query=short%20steep%20hill%20sprint%20acceleration%20resisted"],"N":["OPCIONAL al final: rigidez de tobillo (clave aceleración)","Bajada controlada 2s","Pierna trasera elevada","Pausa 1s arriba","RPE 7","Glúteo y core apretados","Cuerpo en línea","Anti-rotación","Movilidad cadera/tobillo + jog","⭐ Técnica de carrera","⭐ Apoyos rápidos","⭐ Rigidez tobillo","⭐⭐ Recuperación COMPLETA (60-90s entre salidas)","Espalda neutra","","Pendlay","Si no llegas: asistidas","Salud de hombro","Aductores - hockey","⭐ Introducción potencia horizontal — máxima distancia, recuperar entre saltos","Profundidad completa","Rotación de tronco","Apoyos primer paso","Aeróbico mixto","RPE 8, descanso 2-3min","⭐ Inmediatamente tras serie de squat — efecto PAP","Movilidad articular + 5 min jog suave","Z2 conversacional, FC 130-150","⭐ Activación neural pre-fuerza","Espalda neutra, RPE 8","⭐ Potencia horizontal","Más velocidad","Ritmo umbral, cómodamente duro","Explosivo","⭐ Activación tobillo tras 2 semanas parado","⭐ Sustituye salida 10m (no factible en gym). Máxima distancia, 60-90s recuperación","REACTIVACIÓN tras viaje. RPE 6, prioriza técnica","Peso moderado. Reactivar glúteo","BAJAR peso vs. antes del viaje","Reactivar, no forzar","Salud de hombro tras días sin entrenar","Aductores - clave hockey","⭐ Activación","⭐ Sustituye salida 10m. ENTRE SERIES de peso muerto (efecto PAP)","⭐⭐ APROVECHAR - No lo harás en 3 semanas sin gym. Espalda neutra, RPE 7-8","⭐⭐ APROVECHAR - Fuerza compuesta antes del parón","⭐ Pull con barra pesada - imposible sin gym","Si sin lastre no llegas: asistidas o negativas","Prevención isquios - clave hockey","Core","Movilidad cadera/tobillo + trote progresivo","Conversacional, FC 130-150. Sesión de recuperación activa tras gym de ayer","Preparar el tejido para el sprint de esta semana","Prevención inglés/aductor — clave hockey","Core sin fatiga","Más largo que de costumbre: 1ª sesión de sprint tras el viaje","Refrescar el gesto antes de esprintar","Progresivo, sin forzar","Preparar apoyos","PRIMEROS PASOS. 60s recuperación entre salidas","90s recuperación. Total sesión: solo ~65m de calidad (progresión prudente)","Si notas tirantez en isquios, para la sesión ahí","POTENCIA HORIZONTAL. Recuperación completa entre saltos","Tempo controlado en la bajada","Isquios + equilibrio. Mochila con libros/agua","Sustituye press militar","Patrón de tracción","CLAVE: prevención de isquios al subir volumen de sprint","Incluir 3-4 progresivos de 30m antes de empezar","Recuperación COMPLETA (90s). Cambio de dirección","INTRODUCCIÓN RSA. 20s recuperación entre reps, 3 min entre series. Total 240m","Ayuda a aclarar lactato","Recuperación activa. Si estás cansado, solo caminar","Cadera, isquios, tobillos, aductores","Recuperación completa","20s recuperación entre reps, 3 min entre series. Total 240m","Movilidad articular + trote progresivo","Conversacional, FC 130-150. Ayuda a limpiar la fatiga de la RSA de ayer y NO compromete la velocidad de mañana","Prepara el tejido para la sesión de velocidad de mañana","Prevención de aductor/ingle","Lumbar pegada al suelo","Sin rotar la cadera","Movilidad + 3-4 progresivos de 30m","PRIMEROS PASOS al 100%. 60s recuperación","90s recuperación","Mantener mecánica. 2 min recuperación. Total ~150m calidad","Potencia horizontal encadenada","Máxima distancia, recuperación completa","Bajada controlada","Isquios + equilibrio","CLAVE: prevención de isquios","Incluir 4 progresivos de 30m","Recuperación completa (90s)","PROGRESIÓN vs. la de iniciación. 22s recuperación entre reps, 3 min entre series. Total 450m","Piernas frescas tras el domingo de descanso","PRIMEROS PASOS. 60s recuperación","ESPECÍFICO HOCKEY: 2 tumbado, 2 de rodillas, 2 lateral. 90s recuperación","2 min recuperación","Calentamiento largo: sesión más exigente del bloque","SESIÓN MÁS DURA DEL BLOQUE. 20s recuperación entre reps, 3 min entre series. Total 600m","Máximo volumen del bloque","Bajar controlado hasta la silla","Máxima carga del bloque","Progresión hacia 1 brazo","Prevención isquios","FORMATO HOCKEY: sprint + frenada + cambio. 25s recuperación entre reps, 3 min entre series","Pliometría lateral","Conversacional, FC 130-150. Sesión suave: empieza la descarga","Cadera, isquios, aductores, tobillos","Cadera, tobillo y torácica. Tras 3 semanas sin barra, no te saltes esto","Activación neural","Potencia horizontal. Volumen bajo hoy, recuperación completa entre saltos","RPE 6. Haz 2 series de aproximación antes (barra sola + 40kg)","Pausa 1s arriba. Bajo riesgo de agujetas","LIGERO A PROPÓSITO: el que más agujetas genera","RPE 6. Si el hombro molesta, cambia a mancuernas","La tracción la tienes mantenida por el surf","Salud de hombro tras semanas de surf. No lo saltes","Aductores — clave hockey","⭐ Activación neural (apoyos)","⭐⭐ FOCO: primeros 3 pasos","⭐⭐ Recuperación completa entre salidas (60-90s)","AJUSTADO (original 75-85): puente entre la reintroducción del 16/08 y la carga plena. RPE 7","AJUSTADO (original 65-75): el RDL es el que más agujetas genera. Espalda neutra","AJUSTADO (original 18-22): una mancuerna de 14-16 kg en cada mano","AJUSTADO (original 60-70): RPE 7. Vigila el hombro tras el surf","⭐ Mecánica de aceleración contra pared","⭐⭐ PRIMEROS PASOS — máxima intención, 60s recuperación","⭐⭐ Continuación del patrón, 90s recuperación","⭐ Mantener mecánica hasta 20m, 2 min recuperación","⭐ Mecánica de aceleración","⭐⭐ Potencia horizontal — máxima distancia","AJUSTADO (original 40-50). Si no dominas la técnica con soltura, CÁMBIALO POR PUSH PRESS al mismo peso","AJUSTADO (original 85-95): 3 semanas sin barra. Técnica antes que peso","AJUSTADO (original +5-10 lastre): empieza sin lastre esta semana","SUSTITUYE al lanzamiento de balón. Latigazo rápido desde el pie de atrás, vuelta controlada. Sin polea: rotación con landmine (barra en esquina)","⭐ Cuesta corta empinada, bajar caminando. Fuerza específica de aceleración.","⭐⭐ FOCO primer paso","AJUSTADO (original 40-50). Explosivo","⭐⭐ Potencia horizontal encadenada","AJUSTADO (original 12-15). Plano frontal — clave hockey","AJUSTADO (original 55-65)","SUSTITUYE al lanzamiento de balón. Salto horizontal máximo y, al aterrizar, sales esprintando 5m sin pausa. 90s recuperación","AJUSTADO (original 3x5): primera vez en semanas. Excéntrico puro = agujetas. Sube la semana que viene","Si no dominas técnica → push press","RPE 8","⭐ Capacidad de repetir sprints — específico hockey","Plano frontal","⭐ 90 sec descanso","Velocidad concéntrica máxima. La semana pasada movistes 65-70, así que empieza por 72-75","La semana pasada 50-55. Sube a 60-65 hoy","La semana pasada 14. Sube a 16-18","La semana pasada 50-60. Sube a 60-62","⚠️ AÑADIDO: llevas 2 sesiones sin hacerlo y estás metiendo mucho sprint. Prevención de isquios","SUSTITUYE a las salidas resistidas (sin goma ni compañero). La cuesta da la misma resistencia horizontal. Bajar caminando. Si el gym tiene trineo, sirve igual","⭐ Salidas libres tras resistidas (efecto contraste)","Velocidad concéntrica máxima","Explosivo en concéntrica","⭐ Mantener primer paso","Mantener fuerza","⭐ Recuperación completa entre series","⭐ Cambio de dirección + salida","⭐⭐ Potencia horizontal","⭐⭐ Calidad — recuperación completa","Calidad","⭐⭐ ESPECÍFICO SALA: salidas desde tumbado/rodillas/lateral","Explosivo concéntrico","Velocidad","⭐⭐ ESPECÍFICO HOCKEY: 2 desde tumbado, 2 de rodillas, 2 lateral, 2 de espaldas. Recuperación completa.","⭐ Cambio de dirección","⭐ Mecánica","Si dominas; si no → push press","⭐⭐ FOCO PISTA CORTA","Aterrizajes limpios"],"X":["⭐ Pogo jumps (rigidez de tobillo — primeros apoyos)","Sentadilla goblet (mancuerna)","Sentadilla búlgara con mancuernas","Hip thrust con barra","Press de banca","Press militar de pie con barra","Plancha frontal","Pallof press (anti-rotación)","Calentamiento dinámico (10 min)","⭐ A-skip (técnica de carrera)","⭐ Ankling (apoyos rápidos)","⭐⭐ Salida explosiva 10m desde parado","Peso muerto rumano (RDL)","Zancadas andando con mancuernas","Remo con barra (Pendlay)","Dominadas (pull-ups)","Face pulls","Dead bug","Plancha Copenhagen (aductores)","Salto horizontal (broad jump) — TRANSFIERE A ACELERACIÓN","RDL a una pierna","Remo mancuerna a 1 mano","Wood chop en polea","Elevación de talones (gemelos de pie)","Fartlek (cambios de ritmo)","Sentadilla con barra (back squat)","⭐⭐ Saltó horizontal ","Rueda abdominal","Carrera continua Z2 (aeróbico base)","Peso muerto convencional","Zancada inversa con mancuernas","Plancha lateral","Sentadilla frontal","Zancada lateral con mancuerna ","Saltó horizontal","Tempo run (umbral aeróbico)","Push press","Nordic hamstring curl","Calentamiento dinámico","Carrera continua Z2 (base aeróbica)","Movilidad cadera e isquios","⭐ Wall drill (mecánica de aceleración)","⭐ Pogo jumps (rigidez de tobillo)","⭐⭐ Salida explosiva 5m desde parado","Movilidad + estiramientos","⭐⭐ Salto horizontal (broad jump)","Sentadilla búlgara (pie trasero en silla)","RDL a una pierna (mochila cargada)","Flexiones declinadas (pies elevados)","Pike push-ups","Remo invertido (mesa firme / barra baja)","Nordic curl asistido","⭐ Shuttle 5-10-5 (agilidad)","⭐⭐ RSA: sprints repetidos 20m","Vuelta a la calma (trote suave)","Caminata o trote muy suave","Movilidad completa","⭐⭐ RSA: sprints repetidos 20m (iniciación)","Movilidad cadera, isquios y aductores","Bird dog","⭐ Salida explosiva 20m","⭐⭐ Bounding (saltos horizontales alternos)","⭐⭐ RSA: sprints repetidos 25m","⭐⭐ Salidas reactivas 10m (posiciones varias)","⭐⭐ RSA PICO: sprints repetidos 25m","Sentadilla pistol (progresión con silla)","Flexiones archer","⭐ Salida explosiva 10m (activación)","⭐⭐ RSA con cambio de dirección (shuttle)","⭐ Saltos laterales (skater jump)","Movilidad + calentamiento dinámico","⭐⭐ Salida explosiva 5m desde parado (PRIMEROS PASOS)","Cargada colgante (hang clean)","Saltos laterales (skater jump)","Rotación explosiva en polea (cable rotational chop)","⭐ Aceleración en cuesta corta 15-20m","⭐⭐ Bounding (saltos horizontales alternos) — POTENCIA HORIZONTAL","Zancada lateral","Salto horizontal + salida 5m explosiva","RSA: 10x40m al 90% / 30s descanso","Salto horizontal + salida 5 m explosiva","⭐ Aceleración en cuesta corta 10-15m (pendiente pronunciada)","Shuttle 5-10-5 (agilidad)","⭐⭐ Salidas reactivas desde posiciones varias (tumbado/rodillas/lateral) 10m"],"C":[[0,"Peso corporal","3","20",0,0,0],[1,"16-20","3","12",1,1,0],[2,"14 (DBs)","3","10/pierna",2,2,0],[3,"60","3","12",3,3,0],[4,"40-50","3","16;10;10",4,4,0],[5,"25-30","3","10",5,5,0],[6,"Peso corporal","3","45s",6,6,0],[7,"10-15","3","10/lado",7,7,0],[8,"-","1","10 min",8,8,0],[9,"-","3","20m",9,9,0],[10,"-","3","15m",10,10,0],[0,"-","2","15",11,0,0],[11,"-","8","10m",12,11,0],[12,"50-60","3","10",13,12,0],[13,"10-12 (DBs)","3","10/pierna",14,13,0],[14,"40-50","3","10",15,14,0],[15,"Peso corporal","3","6-8",16,15,0],[16,"15-20","3","15",17,16,0],[17,"Peso corporal","3","10/lado",14,17,0],[18,"Peso corporal","3","20s/lado",18,18,0],[19,"Peso corporal","3","4",19,19,0],[1,"20-25","3","10",20,1,0],[20,"10-12 (DBs)","3","10/pierna",14,20,0],[3,"50-60","3","12",14,3,0],[21,"15-20","3","10/lado",14,21,0],[22,"10-15","3","12/lado",21,22,0],[23,"20+ (DBs)","3","15",22,23,0],[8,"-","1","10 min",14,8,0],[24,"-","1","25 min (1min rápido / 2min suave x 6-8)",23,24,0],[1,"22.5","3","12",1,1,0],[3,"50-60","3","12",3,3,0],[4,"50","3","12",4,4,0],[5,"25","3","10",5,5,0],[12,"50","3","10",13,12,0],[13,"12 (DBs)","3","10/pierna",14,13,0],[14,"50","3","10",15,14,0],[15,"Peso corporal","3","8",16,15,0],[16,"15-17,5","3","15",17,16,0],[4,"50","3","10",4,4,0],[7,"10-12,5-12,5","3","10/lado",7,7,0],[12,"50-55-55","3","10",13,12,0],[13,"14 (DBs)","3","10/pierna",14,13,0],[14,"55","3","10",15,14,0],[1,"22.5","3","10",20,1,0],[20,"12 (DBs)","3","10/pierna",14,20,0],[3,"60","3","12",14,3,0],[21,"16-18-18","3","10/lado",14,21,0],[22,"10-12,5-12,5","3","12/lado",21,22,0],[23,"20 (DBs)","3","15",22,23,0],[1,"24","3","12",1,1,0],[3,"50-60-70","3","12",3,3,0],[4,"50-50-55","3","2010-10-12 00:00:00",4,4,0],[5,"30","3","10",5,5,0],[7,"12.5","3","10/lado",7,7,0],[4,"50-55-55","3","2010-10-12 00:00:00",4,4,0],[7,"12,5-12,5-15","3","10/lado",7,7,0],[16,"17.5","3","15",17,16,0],[18,"Peso corporal","3","22s/lado",18,18,0],[1,"22.5","3","12",20,1,0],[20,"12 (DBs)","3","12/pierna",14,20,0],[21,"18","3","10/lado",14,21,0],[25,"60-70-70-70","4","6",24,25,0],[26,"Peso corporal","4","4",25,11,0],[2,"17,5 (DBs)","3","8/pierna",14,2,0],[3,"70-70-80-80","4","8",14,3,0],[4,"55-60-60-60","4","6",14,4,0],[5,"25","3","8",14,5,0],[27,"Peso corporal","3","8",14,26,0],[8,"-","1","10 min",26,8,0],[28,"-","1","30-40 min",27,27,0],[0,"Peso corporal","3","20",28,0,0],[29,"80-90","4","5",29,28,0],[30,"12-15 (DBs)","3","8/pierna",14,29,0],[14,"50-60","4","6",14,14,0],[15,"+5 lastre opcional","4","6",14,15,0],[16,"15-20","3","15",14,16,0],[31,"Peso corporal","3","30s/lado",14,30,0],[19,"Peso corporal","4","4",30,19,0],[32,"50","4","6",14,31,0],[12,"50-55-55","3","8",14,12,0],[33,"14","3","6 lado",14,32,0],[21,"20-20-22","3","8/lado",14,21,0],[22,"10-12,5-12,5","3","10/lado",31,22,0],[18,"Peso corporal","3","25s/lado",14,18,0],[25,"60-70-70-80","4","6",24,25,0],[34,"Peso corporal","4","4",25,11,0],[2,"17.5","3","8/pierna",14,2,0],[5,"30","3","8",14,5,0],[27,"Peso corporal","3","10",14,26,0],[4,"-60","4","6",14,4,0],[27,"Peso corporal","3","8-10",14,26,0],[29,"80","4","5",29,28,0],[30,"14","3","8/pierna",14,29,0],[14,"50-50-60-60","4","6",14,14,0],[16,"12.5","3","15",14,16,0],[35,"-","1","20-25 min",32,33,0],[12,"60","3","8",14,12,0],[36,"35-40-40-40","4","5",33,32,0],[21,"20-22-22","3","8/lado",14,21,0],[22,"12,5- 15- 15","3","10/lado",31,22,0],[0,"Peso corporal","2","15",34,0,0],[19,"Peso corporal","3","3",35,19,0],[1,"20-25","3","10",36,1,0],[3,"60-70","3","8",37,3,0],[2,"12-15 (DBs)","3","8/pierna",38,2,0],[4,"45-55","3","6",39,4,0],[16,"15-20","3","15",40,16,0],[18,"Peso corporal","3","25s/lado",41,18,0],[0,"Peso corporal","2","15",42,0,0],[19,"Peso corporal","4","3",43,19,0],[29,"70-80-80-80","4","5",44,28,0],[25,"65-70-75","3","5",45,25,0],[14,"45-50-55","3","8",46,14,0],[15,"+5 lastre opc","3","6",47,15,0],[37,"Peso corporal","2","5",48,34,0],[31,"Peso corporal","3","30s/lado",49,30,0],[38,"-","1","10 min",50,8,0],[39,"-","1","35-40 min",51,27,0],[40,"-","1","10 min",52,35,0],[18,"Peso corporal","3","25s/lado",53,18,0],[17,"Peso corporal","3","10/lado",54,17,0],[38,"-","1","12 min",55,8,0],[41,"Peso corporal","3","10s/pierna",56,36,0],[9,"-","3","20m",57,9,0],[10,"-","2","15m",14,10,0],[42,"Peso corporal","2","15",58,0,0],[43,"-","5","5m",59,37,0],[11,"-","4","10m",60,11,0],[44,"-","1","10 min",61,35,0],[45,"Peso corporal","4","3",62,19,0],[46,"6 kg leche lado","4","12/pierna",63,38,0],[47,"6 kg leche","4","12/pierna",64,39,0],[48,"Peso corporal","4","15",14,40,0],[49,"Peso corporal","3","8",65,41,0],[50,"Peso corporal","4","10",66,42,0],[51,"Peso corporal","3","5",67,43,0],[18,"Peso corporal","3","30s/lado",14,18,0],[38,"-","1","12 min",68,8,0],[52,"-","4","1 serie",69,44,0],[53,"-","2","6 x 20m",70,45,0],[54,"-","1","10 min",71,27,0],[55,"-","1","30-45 min",72,27,0],[56,"-","1","15 min",73,35,0],[38,"-","1","12 min",14,8,0],[52,"-","4","1 serie",74,44,0],[57,"-","2","6 x 20m",75,45,0],[54,"-","1","10 min",14,27,0],[38,"-","1","10 min",76,8,0],[39,"-","1","35-40 min",77,27,0],[58,"-","1","12 min",78,35,0],[18,"Peso corporal","3","30s/lado",79,18,0],[17,"Peso corporal","3","10/lado",80,17,0],[59,"Peso corporal","3","10/lado",81,46,0],[38,"-","1","12 min",82,8,0],[41,"Peso corporal","3","10s/pierna",14,36,0],[9,"-","2","20m",14,9,0],[42,"Peso corporal","2","15",14,0,0],[43,"-","6","5m",83,37,0],[11,"-","6","10m",84,11,0],[60,"-","3","20m",85,47,0],[61,"Peso corporal","3","6 saltos",86,48,0],[45,"Peso corporal","4","3",87,19,0],[46,"Peso corporal","4","12/pierna",88,38,0],[47,"Mochila 10-14kg","4","12/pierna",89,39,0],[50,"Peso corporal","4","12",66,42,0],[49,"Peso corporal","3","10",65,41,0],[51,"Peso corporal","3","5",90,43,0],[38,"-","1","12 min",91,8,0],[52,"-","4","1 serie",92,44,0],[62,"-","3","6 x 25m",93,45,0],[54,"-","1","10-12 min",14,27,0],[38,"-","1","12 min",94,8,0],[43,"-","6","5m",95,37,0],[63,"-","6","10m",96,49,0],[60,"-","3","20m",97,47,0],[61,"Peso corporal","4","6 saltos",14,48,0],[38,"-","1","15 min",98,8,0],[64,"-","3","8 x 25m",99,45,0],[54,"-","1","12 min",14,27,0],[45,"Peso corporal","4","3",14,19,0],[46,"Peso corporal","4","14/pierna",100,38,0],[65,"Peso corporal","3","5-6/pierna",101,50,0],[47,"Mochila 12-16kg","4","12/pierna",102,39,0],[66,"Peso corporal","3","6/lado",103,51,0],[50,"Peso corporal","4","12",14,42,0],[51,"Peso corporal","3","6",104,43,0],[18,"Peso corporal","3","35s/lado",14,18,0],[67,"-","4","10m",14,11,0],[68,"-","2","6 x (5-10-5)",105,52,0],[69,"Peso corporal","3","6/lado",106,53,0],[38,"-","1","10 min",14,8,0],[39,"-","1","35-40 min",107,27,0],[56,"-","1","15 min",108,35,0],[18,"Peso corporal","2","30s/lado",14,18,0],[17,"Peso corporal","2","10/lado",14,17,0],[70,"-","1","10 min",109,54,0],[42,"Peso corporal","2","15",110,0,0],[45,"Peso corporal","3","3",111,19,0],[25,"60","3","6",112,25,0],[3,"60","3","8",113,3,0],[12,"40-45-45","3","8",114,12,0],[4,"40-45-45","3","8",115,4,0],[14,"40-50-50","3","8",116,14,0],[16,"12,5-12,5-15","3","15",117,16,0],[18,"Peso corporal","3","30s/lado",118,18,0],[17,"Peso corporal","3","10/lado",49,17,0],[0,"Peso corporal","2","15",119,0,0],[71,"Peso corporal","4","1 salida (5m)",120,37,0],[11,"Peso corporal","3","1 salida (10m)",121,11,0],[25,"65-65-70-70","4","5",122,25,0],[12,"50-55-55","3","6",123,12,0],[2,"14","3","6/pierna",124,2,0],[4,"50-60-60-60","4","5",125,4,0],[7,"12,5-15","3","10/lado",14,7,0],[41,"-","3","10s/pierna",126,36,0],[71,"-","6","5m",127,37,0],[11,"-","6","10m",128,11,0],[60,"-","3","20m",129,47,0],[41,"Peso corporal","3","10s/pierna",130,36,0],[19,"Peso corporal","5","3",131,19,0],[72,"35 x3 + 40 x2","5","3",132,55,0],[29,"70-75","4","4",133,28,0],[73,"Peso corporal","3","6/lado",106,53,0],[15,"Peso corporal o +2,5","4","5",134,15,0],[74,"15-20","3","8/lado",135,56,1],[75,"-","10","15-20m cuesta",136,57,0],[11,"Peso corporal","5","1 salida (10m)",137,11,0],[36,"35-40","4","4",138,32,0],[76,"Peso corporal","4","6 saltos",139,48,0],[77,"10-12 (DBs)","3","6/lado",140,58,0],[14,"45-50","4","5",141,14,0],[78,"Peso corporal","4","5",142,59,1],[37,"Peso corporal","2","4",143,34,0],[72,"40-40-45-45-50","5","3",144,55,0],[29,"70-80-80-80","4","4",145,28,0],[15,"5 kg","4","5",14,15,0],[79,"-","1","10x40m / 30s descanso",146,45,0],[36,"40-40-45-45","4","4",33,32,0],[77,"14 mancuerna ","3","6/lado",147,58,0],[14,"50-50-55-55","4","5",14,14,0],[80,"Peso corporal","4","4",148,60,0],[37,"Peso corporal","3","5",104,34,0],[25,"75-80-80-85 ","4","5",149,25,0],[12,"60-65-70","3","6",150,12,0],[2,"18-18-20 (DBs)","3","6/pierna",151,2,0],[4,"60-60-70-70","4","5",152,4,0],[7,"15-15-17,5","3","10/lado",7,7,0],[37,"Peso corporal","","4",153,34,0],[41,"-","2","10s/pierna",14,36,0],[81,"-","6","10m",154,61,1],[11,"-","4","10m",155,11,0],[76,"-","3","6 saltos",30,48,0],[25,"80-80-85-85","4","5",156,25,0],[12,"65-65-70","3","6",14,12,0],[2,"18-18-20 (DBs)","3","6/pierna",14,2,0],[4,"60-70-70-70","4","5",157,4,0],[7,"15-20","3","10/lado",14,7,0],[72,"40-50","5","3",144,55,0],[29,"85-95","4","4",145,28,0],[15,"+5-10 lastre","4","5",14,15,0],[36,"40-50","4","4",33,32,0],[77,"12-15 (DBs)","3","6/lado",147,58,0],[14,"55-65","4","5",14,14,0],[25,"75-85","4","5",156,25,0],[12,"65-75","3","6",14,12,0],[2,"18-22 (DBs)","3","6/pierna",14,2,0],[4,"60-70","4","5",157,4,0],[11,"Peso corporal","3","1 salida (10m)",158,11,0],[25,"70-80","3","5",159,25,0],[3,"70-80","3","6",14,3,0],[2,"15-18 (DBs)","2","6/pierna",14,2,0],[4,"55-65","3","5",14,4,0],[7,"12-18","2","10/lado",14,7,0],[18,"Peso corporal","2","25s/lado",14,18,0],[82,"-","8","1 set",160,44,0],[83,"-","4","10m",161,49,0],[19,"Peso corporal","4","3",162,19,0],[12,"60-70","3","6",14,12,0],[15,"+5 lastre","3","5",14,15,0],[73,"Peso corporal","3","5/lado",14,53,0],[74,"15-20","3","6/lado",135,56,1],[71,"Peso corporal","4","1 salida (5m)",163,37,0],[29,"75-85","3","4",164,28,0],[30,"12-15 (DBs)","3","6/pierna",14,29,0],[5,"30-35","3","6",14,5,0],[21,"20-25","3","8/lado",14,21,0],[37,"Peso corporal","2","5",14,34,0],[31,"Peso corporal","2","30s/lado",14,30,0],[83,"Peso corporal","4","1 salida (10m)",165,49,0],[25,"70-80","3","4",166,25,0],[3,"70-80","3","5",167,3,0],[7,"15-20","2","10/lado",14,7,0],[83,"-","8","10m",168,49,0],[82,"-","4","1 set",169,44,0],[41,"Peso corporal","2","8s/pierna",170,36,0],[76,"Peso corporal","4","5 saltos",162,48,0],[72,"40-50","4","3",171,55,0],[12,"60-70","3","5",14,12,0],[71,"Peso corporal","5","1 salida (5m)",172,37,0],[36,"40-50","3","4",14,32,0],[73,"Peso corporal","3","5/lado",173,53,0],[2,"15-18 (DBs)","3","5/pierna",14,2,0],[14,"55-65","3","5",14,14,0],[78,"Peso corporal","4","4",142,59,1],[27,"Peso corporal","2","10",14,26,0]],"W":[["Mayo 2026","18/05 – 24/05","Bloque 1 - Adaptación S1","Comienzo. Foco en técnica, no peso. RPE 6-7. La carrera incluye drills de técnica para preparar aceleración.",[["Lunes","18/05","GYM A - Tren inf + push","gym",[0,1,2,3,4,5,6,7],[1,1,1,1,1,1,1,1]],["Martes","19/05","CARRERA - Aceleración básica (técnica)","acc",[8,9,10,11,12],[0,0,0,0,0]],["Miércoles","20/05","GYM B - Bisagra + pull","gym",[13,14,15,16,17,18,19],[1,1,1,1,1,1,1]],["Jueves","21/05","Descanso / Hockey / Movilidad","rest",[],[]],["Viernes","22/05","GYM C - Full body + ⭐ broad jump","gym",[20,21,22,23,24,25,26],[1,1,1,1,1,1,1]],["Sábado","23/05","CARRERA - Fartlek","run",[27,28],[1,1]],["Domingo","24/05","Descanso / Hockey / Movilidad","rest",[],[]]]],["Mayo 2026","25/05 – 31/05","Bloque 1 - Adaptación S2","Subir carga si la técnica está bien.",[["Lunes","25/05","GYM A - Tren inf + push","gym",[0,29,2,30,31,32,6,7],[1,1,1,1,1,1,1,1]],["Martes","26/05","CARRERA - Aceleración básica (técnica)","acc",[8,9,10,11,12],[0,0,0,0,0]],["Miércoles","27/05","GYM B - Bisagra + pull","gym",[33,34,35,36,37,18,19],[1,1,1,1,1,1,1]],["Jueves","28/05","Descanso / Hockey / Movilidad","rest",[],[]],["Viernes","29/05","GYM C - Full body + ⭐ broad jump","gym",[20,21,22,23,24,25,26],[0,0,0,0,0,0,0]],["Sábado","30/05","CARRERA - Fartlek","run",[27,28],[1,1]],["Domingo","31/05","Descanso / Hockey / Movilidad","rest",[],[]]]],["Junio 2026","01/06 – 07/06","Bloque 1 - Adaptación S3 (subir peso)","Subir peso 2-5kg compuestos. RPE 7.",[["Lunes","01/06","GYM A - Tren inf + push","gym",[0,29,2,3,38,32,6,39],[1,1,1,1,1,1,1,1]],["Martes","02/06","CARRERA - Aceleración básica (técnica)","acc",[8,9,10,11,12],[0,0,0,0,0]],["Miércoles","03/06","GYM B - Bisagra + pull","gym",[40,41,42,36,37,18,19],[1,1,1,1,1,1,1]],["Jueves","04/06","Descanso / Hockey / Movilidad","rest",[],[]],["Viernes","05/06","GYM C - Full body + ⭐ broad jump","gym",[20,43,44,45,46,47,48],[1,1,1,1,1,1,1]],["Sábado","06/06","CARRERA - Fartlek","run",[27,28],[1,1]],["Domingo","07/06","Descanso / Hockey / Movilidad","rest",[],[]]]],["Junio 2026","08/06 – 14/06","Bloque 1 - Adaptación S4","Calidad de repeticiones.",[["Lunes","08/06","GYM A - Tren inf + push","gym",[0,49,2,50,51,52,6,53],[1,1,1,1,1,1,1,1]],["Martes","09/06","CARRERA - Aceleración básica (técnica)","acc",[8,9,10,11,12],[0,0,0,0,0]],["Miércoles","10/06","GYM B - Bisagra + pull","gym",[40,41,42,36,37,18,19],[1,1,1,1,1,1,1]],["Jueves","11/06","Descanso / Hockey / Movilidad","rest",[],[]],["Viernes","12/06","GYM C - Full body + ⭐ broad jump","gym",[20,21,22,23,24,25,26],[0,0,0,0,0,0,0]],["Sábado","13/06","CARRERA - Fartlek","run",[27,28],[0,0]],["Domingo","14/06","Descanso / Hockey / Movilidad","rest",[],[]]]],["Junio 2026","15/06 – 21/06","Bloque 1 - Hipertrofia S5 (carga alta)","Semana más exigente del bloque. RPE 7-8.",[["Lunes","15/06","GYM A - Tren inf + push","gym",[0,49,2,3,54,52,6,55],[1,1,1,1,1,1,1,1]],["Martes","16/06","CARRERA - Aceleración básica (técnica)","acc",[8,9,10,11,12],[1,1,1,1,1]],["Miércoles","17/06","GYM B - Bisagra + pull","gym",[40,41,42,36,56,18,57],[1,1,1,1,1,1,1]],["Jueves","18/06","Descanso / Hockey / Movilidad","rest",[],[]],["Viernes","19/06","GYM C - Full body + ⭐ broad jump","gym",[20,58,59,45,60,47,48],[1,1,1,1,1,1,1]],["Sábado","20/06","CARRERA - Fartlek","run",[27,28],[0,0]],["Domingo","21/06","Descanso / Hockey / Movilidad","rest",[],[]]]],["Junio 2026","22/06 – 28/06","Bloque 2 - Fuerza (inicio, recortada)","Viaje 25-29 junio. Lun-mié entrenas, jue-lun descanso.",[["Lunes","22/06","GYM A - Fuerza + salida PAP","gym",[61,62,63,64,65,66,67],[1,1,1,1,1,1,1]],["Martes","23/06","CARRERA - Z2","run",[68,69],[0,1]],["Miércoles","24/06","GYM B - Fuerza bisagra + pull","gym",[70,71,72,73,74,75,76],[0,0,0,0,0,0,0]],["Jueves","25/06","Descanso / Hockey / Movilidad","rest",[],[]],["Viernes","26/06","Descanso / Hockey / Movilidad","rest",[],[]],["Sábado","27/06","Descanso / Hockey / Movilidad","rest",[],[]],["Domingo","28/06","Descanso / Hockey / Movilidad","rest",[],[]]]],["Junio 2026","29/06 – 05/07","Bloque 2 - Vuelta de viaje","Vuelta lunes 29. Retomas miércoles.",[["Lunes","29/06","Descanso / Hockey / Movilidad","rest",[],[]],["Martes","30/06","Descanso / Hockey / Movilidad","rest",[],[]],["Miércoles","01/07","GYM C - Full body suave","gym",[77,78,79,80,81,82,83],[1,1,1,1,1,1,1]],["Jueves","02/07","Descanso / Hockey / Movilidad","rest",[],[]],["Viernes","03/07","CARRERA - Z2","run",[68,69],[0,1]],["Sábado","04/07","GYM A - Fuerza + salida PAP","gym",[84,85,86,64,65,87,88],[1,1,1,0,1,1,1]],["Domingo","05/07","Descanso / Hockey / Movilidad","rest",[],[]]]],["Julio 2026","06/07 – 12/07","Bloque 2 - Fuerza (semana corta pre-viaje)","Última semana antes del viaje a Gabón (11-25 jul). Sin fatigar.",[["Lunes","06/07","GYM A - Fuerza inf + push + salida PAP","gym",[84,62,86,64,89,87,90],[0,0,0,0,0,0,0]],["Martes","07/07","Descanso / Hockey / Movilidad","rest",[],[]],["Miércoles","08/07","GYM B - Fuerza bisagra + pull","gym",[70,91,92,93,74,94,76],[0,0,0,0,0,0,0]],["Jueves","09/07","Descanso / Hockey / Movilidad","rest",[],[]],["Viernes","10/07","CARRERA - Tempo","run",[27,95],[0,0]],["Sábado","11/07","GYM C - Full body + potencia horizontal","gym",[77,78,96,97,98,99,83],[0,0,0,0,0,0,0]],["Domingo","12/07","Descanso / Hockey / Movilidad","rest",[],[]]]],["Julio 2026","13/07 – 19/07","VIAJE GABÓN","Viaje Gabón. Descanso del plan. Caminatas, movilidad libre.",[]],["Julio 2026","20/07 – 26/07","VIAJE GABÓN (vuelta sáb 25) + GYM domingo 26","Vuelta de Gabón el sábado 25. DOMINGO 26: sesión de gym de reactivación (1º de los 2 días seguidos de gym antes de las 3 semanas sin equipamiento).",[["Lunes","20/07","Viaje Gabón — sin sesión planificada","rest",[],[]],["Martes","21/07","Viaje Gabón — sin sesión planificada","rest",[],[]],["Miércoles","22/07","Viaje Gabón — sin sesión planificada","rest",[],[]],["Jueves","23/07","Viaje Gabón — sin sesión planificada","rest",[],[]],["Viernes","24/07","Viaje Gabón — sin sesión planificada","rest",[],[]],["Sábado","25/07","Viaje Gabón — sin sesión planificada","rest",[],[]],["Domingo","26/07","GYM - Reactivación tras viaje","gym",[100,101,102,103,104,105,106,107],[0,0,0,0,0,0,0,0]]]],["Julio 2026","27/07 – 02/08","Bloque 3 REDISEÑADO - Transición: mecánica + base aeróbica","LUNES 27: último día de gym (fuerza compuesta). MIÉRCOLES 29: DESCANSO por viaje. Desde el 28/07 al 16/08 sin gym → el bloque pasa a centrarse en VELOCIDAD, RSA (aguante para esprintar repetidamente) y base aeróbica. Volumen de sprint bajo esta semana: vuelves de 2 semanas parado.",[["Lunes","27/07","GYM - Fuerza compuesta (último gym antes de 3 semanas)","gym",[108,109,110,111,112,113,114,115],[1,1,1,1,1,1,0,1]],["Martes","28/07","CARRERA - Base aeróbica Z2 + movilidad (suave)","run",[116,117,118,119,120],[1,1,1,1,1]],["Miércoles","29/07","DESCANSO — Viaje (sin entrenamiento)","rest",[],[]],["Jueves","30/07","⭐⭐ VELOCIDAD - Mecánica + primeros pasos (volumen bajo)","acc",[121,122,123,124,125,126,127,128],[1,1,1,1,1,1,1,1]],["Viernes","31/07","PESO CORPORAL A - Tren inferior + pliometría horizontal","bw",[129,130,131,132,133,134,135,136],[1,1,1,1,1,1,1,1]],["Sábado","01/08","⭐⭐ RSA - Sprints repetidos (introducción) + agilidad","rsa",[137,138,139,140],[1,1,1,1]],["Domingo","02/08","RECUPERACIÓN ACTIVA - Caminata / trote suave","gym",[141,142],[0,0]]]],["Agosto 2026","03/08 – 09/08","Bloque 3 - 5 sesiones + 2 descansos","RSA de iniciación hecha el MARTES 4. Miércoles 5 (hoy): sesión aeróbica suave — limpia la fatiga de la RSA y no compromete la velocidad del jueves. Descansos: lunes 3 (ya pasado) y domingo 9.",[["Lunes","03/08","Descanso (ya pasado)","rest",[],[]],["Martes","04/08","⭐⭐ RSA - Iniciación + agilidad  [HECHO]","done",[143,144,145,146],[1,1,1,1]],["Miércoles","05/08","CARRERA - Base aeróbica Z2 + movilidad + core","run",[147,148,149,150,76,151,152],[1,1,1,1,1,1,1]],["Jueves","06/08","⭐⭐ VELOCIDAD - Primeros pasos + pliometría horizontal","acc",[153,154,155,156,157,158,159,160],[1,1,1,1,1,1,1,1]],["Viernes","07/08","PESO CORPORAL - Full body + core","bw",[161,162,163,132,164,165,166,136],[0,1,1,0,0,0,0,0]],["Sábado","08/08","⭐⭐ RSA - Progresión 3x6x25m + agilidad","rsa",[167,168,169,170],[1,1,1,1]],["Domingo","09/08","DESCANSO — llegar fresco al lunes 10","rest",[],[]]]],["Agosto 2026","10/08 – 16/08","Bloque 3 - Pico de RSA (5 sesiones + 2 descansos)","Semana con carga repartida entre esta y la anterior (surf y falta de tiempo). DOMINGO 16: vuelta al gimnasio con sesión de REINTRODUCCIÓN — cargas al ~75% de julio y RPE 6, para no llegar con agujetas a la pretemporada.",[["Lunes","10/08","⭐⭐ VELOCIDAD - Primeros pasos + salidas reactivas","acc",[171,154,155,156,172,173,174,175],[0,0,0,0,0,0,0,0]],["Martes","11/08","⭐⭐ RSA PICO - Sprints repetidos 3x8x25m","rsa",[176,144,177,178],[0,0,0,0]],["Miércoles","12/08","DESCANSO COMPLETO (tras el pico de RSA de ayer)","rest",[],[]],["Jueves","13/08","PESO CORPORAL - Full body (pico del bloque)","bw",[179,180,181,182,183,184,185,186],[0,0,0,0,0,0,0,0]],["Viernes","14/08","⭐⭐ RSA HOCKEY - Sprints con cambio de dirección","rsa",[143,187,188,189,146],[0,0,0,0,0]],["Sábado","15/08","CARRERA - Base aeróbica Z2 + movilidad (descarga)","run",[190,191,192,193,194],[1,1,1,0,0]],["Domingo","16/08","GYM - REINTRODUCCIÓN tras 3 semanas sin barra","gym",[195,196,197,198,199,200,201,202,203,204,205],[1,1,1,1,1,1,1,1,1,1,1]]]],["Agosto 2026","17/08 – 23/08","Bloque 4 - Pretemporada S1 (CARGAS AJUSTADAS a la vuelta)","REALIZADO: GYM A (mar 18), aceleración (mié 19) y GYM B (jue 20). NO realizado: las cuestas del viernes 21 y el GYM C completo del sábado 22 — el patrón de GYM C se recuperó en la semana siguiente.",[["Lunes","17/08","DESCANSO — recuperación de la vuelta al gym de ayer","rest",[],[]],["Martes","18/08","GYM A - Fuerza + ⭐⭐ salidas PAP","gym",[206,207,208,209,210,211,212,213],[1,1,1,1,1,1,1,1]],["Miércoles","19/08","⭐⭐ CARRERA - Aceleración primeros pasos","acc",[27,214,155,215,216,217],[1,1,1,1,1,1]],["Jueves","20/08","GYM B - Potencia horizontal + COD","gym",[218,219,220,221,222,223,224,136],[1,1,1,1,1,1,0,0]],["Viernes","21/08","⭐ CARRERA - RSA / Cuesta","rsa",[27,155,225],[1,1,1]],["Sábado","22/08","GYM C - Potencia + ⭐⭐ salidas","gym",[108,226,227,228,229,230,231,232],[0,0,0,0,0,0,0,0]],["Domingo","23/08","DESCANSO","rest",[],[]]]],["Agosto 2026","24/08 – 30/08","Bloque 4 - S2 (reordenada: 5 sesiones + 2 descansos)","REALIZADO lun-mié: GYM B, RSA 10x40m y GYM C. JUEVES 27 (hoy): GYM A de fuerza, con el nordic curl añadido (llevabas 2 sesiones sin hacerlo). Viernes descanso y SÁBADO 29 la sesión de aceleración, para que la velocidad salga con piernas frescas. Pendiente suelto: la rotación en polea del GYM B.",[["Lunes","24/08","GYM B - Potencia horizontal + COD","gym",[218,219,233,234,222,235,224,136],[1,1,1,1,1,1,0,1]],["Martes","25/08","⭐ CARRERA - RSA / Cuesta","rsa",[27,236],[1,1]],["Miércoles","26/08","GYM C - Potencia + ⭐⭐ salidas","gym",[108,226,237,228,238,239,240,241],[1,1,1,1,1,1,1,1]],["Jueves","27/08","GYM A - Fuerza + ⭐⭐ salidas PAP  ← HOY","gym",[206,207,208,242,243,244,245,246,247],[1,0,0,1,1,1,1,1,1]],["Viernes","28/08","DESCANSO — tras el GYM A de ayer, para que el sábado la velocidad salga con calidad","rest",[],[]],["Sábado","29/08","⭐⭐ CARRERA - Aceleración primeros pasos","acc",[27,248,249,250,251],[1,1,1,1,1]],["Domingo","30/08","DESCANSO — llegar fresco al lunes 31 (S3, semana de intensificación)","rest",[],[]]]],["Agosto 2026","31/08 – 06/09","Bloque 4 - Pretemporada S3 (intensificación)","Volumen alto. Aceleración con calidad máxima.",[["Lunes","31/08","GYM A - Fuerza + ⭐⭐ salidas PAP","gym",[206,207,208,252,253,254,255,256],[1,1,1,1,1,1,1,1]],["Martes","01/09","⭐⭐ CARRERA - Aceleración primeros pasos","acc",[27,214,155,215,216,217],[0,0,0,0,0,0]],["Miércoles","02/09","GYM B - Potencia horizontal + COD","gym",[218,219,257,258,222,259,224,136],[0,0,0,0,0,0,0,0]],["Jueves","03/09","⭐ CARRERA - RSA / Cuesta","rsa",[27,236],[0,0]],["Viernes","04/09","GYM C - Potencia + ⭐⭐ salidas","gym",[108,226,260,228,261,262,231,241],[0,0,0,0,0,0,0,0]],["Sábado","05/09","Descanso / Hockey / Movilidad","rest",[],[]],["Domingo","06/09","Descanso / Hockey / Movilidad","rest",[],[]]]],["Septiembre 2026","07/09 – 13/09","Bloque 4 - Pretemporada S4 (intensificación)","Semana exigente. Vigila descanso.",[["Lunes","07/09","GYM A - Fuerza + ⭐⭐ salidas PAP","gym",[206,207,208,263,264,265,266,256],[0,0,0,0,0,0,0,0]],["Martes","08/09","⭐⭐ CARRERA - Aceleración primeros pasos","acc",[27,248,249,250,251],[0,0,0,0,0]],["Miércoles","09/09","GYM B - Potencia horizontal + COD","gym",[218,219,257,258,222,259,224,136],[0,0,0,0,0,0,0,0]],["Jueves","10/09","⭐ CARRERA - RSA / Cuesta","rsa",[27,155,225],[0,0,0]],["Viernes","11/09","GYM C - Potencia + ⭐⭐ salidas","gym",[108,226,260,228,261,262,231,241],[0,0,0,0,0,0,0,0]],["Sábado","12/09","Descanso / Hockey / Movilidad","rest",[],[]],["Domingo","13/09","Descanso / Hockey / Movilidad","rest",[],[]]]],["Septiembre 2026","14/09 – 20/09","Bloque 4 - Pretemporada S5 (pico)","Última de carga alta. Calidad por encima de todo.",[["Lunes","14/09","GYM A - Fuerza + ⭐⭐ salidas PAP","gym",[206,207,208,263,264,265,266,256],[0,0,0,0,0,0,0,0]],["Martes","15/09","⭐⭐ CARRERA - Aceleración primeros pasos","acc",[27,214,155,215,216,217],[0,0,0,0,0,0]],["Miércoles","16/09","GYM B - Potencia horizontal + COD","gym",[218,219,257,258,222,259,224,136],[0,0,0,0,0,0,0,0]],["Jueves","17/09","⭐ CARRERA - RSA / Cuesta","rsa",[27,236],[0,0]],["Viernes","18/09","GYM C - Potencia + ⭐⭐ salidas","gym",[108,226,260,228,261,262,231,241],[0,0,0,0,0,0,0,0]],["Sábado","19/09","Descanso / Hockey / Movilidad","rest",[],[]],["Domingo","20/09","Descanso / Hockey / Movilidad","rest",[],[]]]],["Septiembre 2026","21/09 – 27/09","Bloque 4 - Pretemporada S6 (descarga pre-temporada)","Descarga: -30% volumen, mantener intensidad. Llegar fresco al 30/9.",[["Lunes","21/09","GYM A - Fuerza + ⭐⭐ salidas PAP","gym",[206,207,208,263,264,265,266,256],[0,0,0,0,0,0,0,0]],["Martes","22/09","⭐⭐ CARRERA - Aceleración primeros pasos","acc",[27,248,249,250,251],[0,0,0,0,0]],["Miércoles","23/09","GYM B - Potencia horizontal + COD","gym",[218,219,257,258,222,259,224,136],[0,0,0,0,0,0,0,0]],["Jueves","24/09","⭐ CARRERA - RSA / Cuesta","rsa",[8,9,10,11,12],[0,0,0,0,0]],["Viernes","25/09","GYM C - Potencia + ⭐⭐ salidas","gym",[108,226,260,228,261,262,231,241],[0,0,0,0,0,0,0,0]],["Sábado","26/09","Descanso / Hockey / Movilidad","rest",[],[]],["Domingo","27/09","Descanso / Hockey / Movilidad","rest",[],[]]]],["Septiembre 2026","28/09 – 04/10","Inicio temporada hierba (30 sept)","Semana de transición. Lunes/martes gym suave.",[["Lunes","28/09","GYM A - Mantenimiento + salida","gym",[108,267,268,269,270,271,272,273],[0,0,0,0,0,0,0,0]],["Martes","29/09","CARRERA - Agilidad","run",[27,274,275],[0,0,0]],["Miércoles","30/09","Descanso / Hockey / Movilidad","rest",[],[]],["Jueves","01/10","GYM B - Potencia ligera","gym",[276,277,278,279,280,194],[0,0,0,0,0,0]],["Viernes","02/10","Descanso / Hockey / Movilidad","rest",[],[]],["Sábado","03/10","Descanso / Hockey / Movilidad","rest",[],[]],["Domingo","04/10","Descanso / Hockey / Movilidad","rest",[],[]]]],["Octubre 2026","05/10 – 11/10","Bloque 5 - En temporada hierba (mantenimiento + aceleración)","3 gym + 1 carrera. Sesiones cortas. La sesión de carrera SIEMPRE incluye salidas para no perder primer paso.",[["Lunes","05/10","GYM A - Fuerza mantenimiento + salida","gym",[108,267,268,269,270,271,272,273],[0,0,0,0,0,0,0,0]],["Martes","06/10","⭐ CARRERA - Aceleración + agilidad","acc",[8,9,10,11,12],[0,0,0,0,0]],["Miércoles","07/10","GYM B - Potencia horizontal","gym",[276,277,278,279,280,194],[0,0,0,0,0,0]],["Jueves","08/10","Descanso / Hockey / Movilidad","rest",[],[]],["Viernes","09/10","GYM C - Calidad + ⭐ salida 5m","gym",[281,282,283,284,285,286,287],[0,0,0,0,0,0,0]],["Sábado","10/10","Descanso / Hockey / Movilidad","rest",[],[]],["Domingo","11/10","Descanso / Hockey / Movilidad","rest",[],[]]]],["Octubre 2026","12/10 – 18/10","Bloque 5 - En temporada hierba (mantenimiento + aceleración)","3 gym + 1 carrera. Sesiones cortas. La sesión de carrera SIEMPRE incluye salidas para no perder primer paso.",[["Lunes","12/10","GYM A - Fuerza mantenimiento + salida","gym",[108,267,268,269,270,271,272,273],[0,0,0,0,0,0,0,0]],["Martes","13/10","⭐ CARRERA - Aceleración + agilidad","acc",[8,9,10,11,12],[0,0,0,0,0]],["Miércoles","14/10","GYM B - Potencia horizontal","gym",[276,277,278,279,280,194],[0,0,0,0,0,0]],["Jueves","15/10","Descanso / Hockey / Movilidad","rest",[],[]],["Viernes","16/10","GYM C - Calidad + ⭐ salida 5m","gym",[281,282,283,284,285,286,287],[0,0,0,0,0,0,0]],["Sábado","17/10","Descanso / Hockey / Movilidad","rest",[],[]],["Domingo","18/10","Descanso / Hockey / Movilidad","rest",[],[]]]],["Octubre 2026","19/10 – 25/10","Bloque 5 - En temporada hierba (mantenimiento + aceleración)","3 gym + 1 carrera. Sesiones cortas. La sesión de carrera SIEMPRE incluye salidas para no perder primer paso.",[["Lunes","19/10","GYM A - Fuerza mantenimiento + salida","gym",[108,267,268,269,270,271,272,273],[0,0,0,0,0,0,0,0]],["Martes","20/10","⭐ CARRERA - Aceleración + agilidad","acc",[8,9,10,11,12],[0,0,0,0,0]],["Miércoles","21/10","GYM B - Potencia horizontal","gym",[276,277,278,279,280,194],[0,0,0,0,0,0]],["Jueves","22/10","Descanso / Hockey / Movilidad","rest",[],[]],["Viernes","23/10","GYM C - Calidad + ⭐ salida 5m","gym",[281,282,283,284,285,286,287],[0,0,0,0,0,0,0]],["Sábado","24/10","Descanso / Hockey / Movilidad","rest",[],[]],["Domingo","25/10","Descanso / Hockey / Movilidad","rest",[],[]]]],["Octubre 2026","26/10 – 01/11","Bloque 5 - En temporada hierba (mantenimiento + aceleración)","3 gym + 1 carrera. Sesiones cortas. La sesión de carrera SIEMPRE incluye salidas para no perder primer paso.",[["Lunes","26/10","GYM A - Fuerza mantenimiento + salida","gym",[108,267,268,269,270,271,272,273],[0,0,0,0,0,0,0,0]],["Martes","27/10","⭐ CARRERA - Aceleración + agilidad","acc",[8,9,10,11,12],[0,0,0,0,0]],["Miércoles","28/10","GYM B - Potencia horizontal","gym",[276,277,278,279,280,194],[0,0,0,0,0,0]],["Jueves","29/10","Descanso / Hockey / Movilidad","rest",[],[]],["Viernes","30/10","GYM C - Calidad + ⭐ salida 5m","gym",[281,282,283,284,285,286,287],[0,0,0,0,0,0,0]],["Sábado","31/10","Descanso / Hockey / Movilidad","rest",[],[]],["Domingo","01/11","Descanso / Hockey / Movilidad","rest",[],[]]]],["Noviembre 2026","02/11 – 08/11","Bloque 5 - En temporada hierba (mantenimiento + aceleración)","3 gym + 1 carrera. Sesiones cortas. La sesión de carrera SIEMPRE incluye salidas para no perder primer paso.",[["Lunes","02/11","GYM A - Fuerza mantenimiento + salida","gym",[108,267,268,269,270,271,272,273],[0,0,0,0,0,0,0,0]],["Martes","03/11","⭐ CARRERA - Aceleración + agilidad","acc",[8,9,10,11,12],[0,0,0,0,0]],["Miércoles","04/11","GYM B - Potencia horizontal","gym",[276,277,278,279,280,194],[0,0,0,0,0,0]],["Jueves","05/11","Descanso / Hockey / Movilidad","rest",[],[]],["Viernes","06/11","GYM C - Calidad + ⭐ salida 5m","gym",[281,282,283,284,285,286,287],[0,0,0,0,0,0,0]],["Sábado","07/11","Descanso / Hockey / Movilidad","rest",[],[]],["Domingo","08/11","Descanso / Hockey / Movilidad","rest",[],[]]]],["Noviembre 2026","09/11 – 15/11","Bloque 5 - En temporada hierba (mantenimiento + aceleración)","3 gym + 1 carrera. Sesiones cortas. La sesión de carrera SIEMPRE incluye salidas para no perder primer paso.",[["Lunes","09/11","GYM A - Fuerza mantenimiento + salida","gym",[108,267,268,269,270,271,272,273],[0,0,0,0,0,0,0,0]],["Martes","10/11","⭐ CARRERA - Aceleración + agilidad","acc",[8,9,10,11,12],[0,0,0,0,0]],["Miércoles","11/11","GYM B - Potencia horizontal","gym",[276,277,278,279,280,194],[0,0,0,0,0,0]],["Jueves","12/11","Descanso / Hockey / Movilidad","rest",[],[]],["Viernes","13/11","GYM C - Calidad + ⭐ salida 5m","gym",[281,282,283,284,285,286,287],[0,0,0,0,0,0,0]],["Sábado","14/11","Descanso / Hockey / Movilidad","rest",[],[]],["Domingo","15/11","Descanso / Hockey / Movilidad","rest",[],[]]]],["Noviembre 2026","16/11 – 22/11","Bloque 5 - En temporada hierba (mantenimiento + aceleración)","3 gym + 1 carrera. Sesiones cortas. La sesión de carrera SIEMPRE incluye salidas para no perder primer paso.",[["Lunes","16/11","GYM A - Fuerza mantenimiento + salida","gym",[108,267,268,269,270,271,272,273],[0,0,0,0,0,0,0,0]],["Martes","17/11","⭐ CARRERA - Aceleración + agilidad","acc",[8,9,10,11,12],[0,0,0,0,0]],["Miércoles","18/11","GYM B - Potencia horizontal","gym",[276,277,278,279,280,194],[0,0,0,0,0,0]],["Jueves","19/11","Descanso / Hockey / Movilidad","rest",[],[]],["Viernes","20/11","GYM C - Calidad + ⭐ salida 5m","gym",[281,282,283,284,285,286,287],[0,0,0,0,0,0,0]],["Sábado","21/11","Descanso / Hockey / Movilidad","rest",[],[]],["Domingo","22/11","Descanso / Hockey / Movilidad","rest",[],[]]]],["Noviembre 2026","23/11 – 29/11","Bloque 5 - En temporada hierba (mantenimiento + aceleración)","3 gym + 1 carrera. Sesiones cortas. La sesión de carrera SIEMPRE incluye salidas para no perder primer paso.",[["Lunes","23/11","GYM A - Fuerza mantenimiento + salida","gym",[108,267,268,269,270,271,272,273],[0,0,0,0,0,0,0,0]],["Martes","24/11","⭐ CARRERA - Aceleración + agilidad","acc",[8,9,10,11,12],[0,0,0,0,0]],["Miércoles","25/11","GYM B - Potencia horizontal","gym",[276,277,278,279,280,194],[0,0,0,0,0,0]],["Jueves","26/11","Descanso / Hockey / Movilidad","rest",[],[]],["Viernes","27/11","GYM C - Calidad + ⭐ salida 5m","gym",[281,282,283,284,285,286,287],[0,0,0,0,0,0,0]],["Sábado","28/11","Descanso / Hockey / Movilidad","rest",[],[]],["Domingo","29/11","Descanso / Hockey / Movilidad","rest",[],[]]]],["Noviembre 2026","30/11 – 06/12","Bloque 5 - En temporada hierba (mantenimiento + aceleración)","3 gym + 1 carrera. Sesiones cortas. La sesión de carrera SIEMPRE incluye salidas para no perder primer paso.",[["Lunes","30/11","GYM A - Fuerza mantenimiento + salida","gym",[108,267,268,269,270,271,272,273],[0,0,0,0,0,0,0,0]],["Martes","01/12","⭐ CARRERA - Aceleración + agilidad","acc",[8,9,10,11,12],[0,0,0,0,0]],["Miércoles","02/12","GYM B - Potencia horizontal","gym",[276,277,278,279,280,194],[0,0,0,0,0,0]],["Jueves","03/12","Descanso / Hockey / Movilidad","rest",[],[]],["Viernes","04/12","GYM C - Calidad + ⭐ salida 5m","gym",[281,282,283,284,285,286,287],[0,0,0,0,0,0,0]],["Sábado","05/12","Descanso / Hockey / Movilidad","rest",[],[]],["Domingo","06/12","Descanso / Hockey / Movilidad","rest",[],[]]]],["Diciembre 2026","07/12 – 13/12","Bloque 5 - En temporada hierba (mantenimiento + aceleración)","3 gym + 1 carrera. Sesiones cortas. La sesión de carrera SIEMPRE incluye salidas para no perder primer paso.",[["Lunes","07/12","GYM A - Fuerza mantenimiento + salida","gym",[108,267,268,269,270,271,272,273],[0,0,0,0,0,0,0,0]],["Martes","08/12","⭐ CARRERA - Aceleración + agilidad","acc",[8,9,10,11,12],[0,0,0,0,0]],["Miércoles","09/12","GYM B - Potencia horizontal","gym",[276,277,278,279,280,194],[0,0,0,0,0,0]],["Jueves","10/12","Descanso / Hockey / Movilidad","rest",[],[]],["Viernes","11/12","GYM C - Calidad + ⭐ salida 5m","gym",[281,282,283,284,285,286,287],[0,0,0,0,0,0,0]],["Sábado","12/12","Descanso / Hockey / Movilidad","rest",[],[]],["Domingo","13/12","Descanso / Hockey / Movilidad","rest",[],[]]]],["Diciembre 2026","14/12 – 20/12","Transición a sala (inicio 15 dic)","Empieza a meter trabajo específico de sala (espacios cortos).",[["Lunes","14/12","GYM A - Mantenimiento + salida reactiva","gym",[108,288,289,290,271,291],[0,0,0,0,0,0]],["Martes","15/12","⭐ CARRERA - Aceleración reactiva (sala)","acc",[27,155,292,293],[0,0,0,0]],["Miércoles","16/12","GYM B - Potencia horizontal","gym",[294,295,296,297,278,280,193],[0,0,0,0,0,0,0]],["Jueves","17/12","Descanso / Hockey / Movilidad","rest",[],[]],["Viernes","18/12","GYM C - Calidad + salidas 5m","gym",[298,299,300,301,302,303,304],[0,0,0,0,0,0,0]],["Sábado","19/12","Descanso / Hockey / Movilidad","rest",[],[]],["Domingo","20/12","Descanso / Hockey / Movilidad","rest",[],[]]]],["Diciembre 2026","21/12 – 27/12","Bloque 6 - Sala (acercándose al pico)","Fiestas: prioriza no perder explosividad. Si viajas, sustituye gym por Bloque 3.",[["Lunes","21/12","GYM A - Potencia + ⭐⭐ salidas reactivas","gym",[108,288,289,290,271,291],[0,0,0,0,0,0]],["Martes","22/12","Descanso / Hockey / Movilidad","rest",[],[]],["Miércoles","23/12","GYM B - Potencia horizontal","gym",[294,295,296,297,278,280,193],[0,0,0,0,0,0,0]],["Jueves","24/12","⭐ CARRERA - Aceleración reactiva","acc",[27,155,292,293],[0,0,0,0]],["Viernes","25/12","GYM C - Salidas 5m + asimétrico","gym",[298,299,300,301,302,303,304],[0,0,0,0,0,0,0]],["Sábado","26/12","Descanso / Hockey / Movilidad","rest",[],[]],["Domingo","27/12","Descanso / Hockey / Movilidad","rest",[],[]]]],["Diciembre 2026","28/12 – 03/01","Bloque 6 - Sala (acercándose al pico)","Fiestas: prioriza no perder explosividad. Si viajas, sustituye gym por Bloque 3.",[["Lunes","28/12","GYM A - Potencia + ⭐⭐ salidas reactivas","gym",[108,288,289,290,271,291],[0,0,0,0,0,0]],["Martes","29/12","Descanso / Hockey / Movilidad","rest",[],[]],["Miércoles","30/12","GYM B - Potencia horizontal","gym",[294,295,296,297,278,280,193],[0,0,0,0,0,0,0]],["Jueves","31/12","⭐ CARRERA - Aceleración reactiva","acc",[27,155,292,293],[0,0,0,0]],["Viernes","01/01","GYM C - Salidas 5m + asimétrico","gym",[298,299,300,301,302,303,304],[0,0,0,0,0,0,0]],["Sábado","02/01","Descanso / Hockey / Movilidad","rest",[],[]],["Domingo","03/01","Descanso / Hockey / Movilidad","rest",[],[]]]],["Enero 2027","04/01 – 10/01","Bloque 6 - Sala (acercándose al pico)","Fiestas: prioriza no perder explosividad. Si viajas, sustituye gym por Bloque 3.",[["Lunes","04/01","GYM A - Potencia + ⭐⭐ salidas reactivas","gym",[108,288,289,290,271,291],[0,0,0,0,0,0]],["Martes","05/01","Descanso / Hockey / Movilidad","rest",[],[]],["Miércoles","06/01","GYM B - Potencia horizontal","gym",[294,295,296,297,278,280,193],[0,0,0,0,0,0,0]],["Jueves","07/01","⭐ CARRERA - Aceleración reactiva","acc",[27,155,292,293],[0,0,0,0]],["Viernes","08/01","GYM C - Salidas 5m + asimétrico","gym",[298,299,300,301,302,303,304],[0,0,0,0,0,0,0]],["Sábado","09/01","Descanso / Hockey / Movilidad","rest",[],[]],["Domingo","10/01","Descanso / Hockey / Movilidad","rest",[],[]]]],["Enero 2027","11/01 – 17/01","Bloque 6 - SALA - SEMANAS PICO (8-31 ene)","SEMANAS CLAVE. Calidad > volumen. Cuidar sueño y nutrición. NO entrenes fuerza el día antes de partido importante.",[["Lunes","11/01","GYM A - ⭐⭐ Salidas reactivas + fuerza","gym",[108,288,289,290,271,291],[0,0,0,0,0,0]],["Martes","12/01","⭐⭐ CARRERA - Aceleración primeros pasos","acc",[27,214,155,215,216,217],[0,0,0,0,0,0]],["Miércoles","13/01","GYM B - Potencia horizontal","gym",[294,295,296,297,278,280,193],[0,0,0,0,0,0,0]],["Jueves","14/01","⭐ CARRERA - Reactiva + agilidad","run",[27,155,292,293],[0,0,0,0]],["Viernes","15/01","GYM C - Salidas 5m + asimétrico","gym",[298,299,300,301,302,303,304],[0,0,0,0,0,0,0]],["Sábado","16/01","Descanso / Hockey / Movilidad","rest",[],[]],["Domingo","17/01","Descanso / Hockey / Movilidad","rest",[],[]]]],["Enero 2027","18/01 – 24/01","Bloque 6 - SALA - SEMANAS PICO (8-31 ene)","SEMANAS CLAVE. Calidad > volumen. Cuidar sueño y nutrición. NO entrenes fuerza el día antes de partido importante.",[["Lunes","18/01","GYM A - ⭐⭐ Salidas reactivas + fuerza","gym",[108,288,289,290,271,291],[0,0,0,0,0,0]],["Martes","19/01","⭐⭐ CARRERA - Aceleración primeros pasos","acc",[27,214,155,215,216,217],[0,0,0,0,0,0]],["Miércoles","20/01","GYM B - Potencia horizontal","gym",[294,295,296,297,278,280,193],[0,0,0,0,0,0,0]],["Jueves","21/01","⭐ CARRERA - Reactiva + agilidad","run",[27,155,292,293],[0,0,0,0]],["Viernes","22/01","GYM C - Salidas 5m + asimétrico","gym",[298,299,300,301,302,303,304],[0,0,0,0,0,0,0]],["Sábado","23/01","Descanso / Hockey / Movilidad","rest",[],[]],["Domingo","24/01","Descanso / Hockey / Movilidad","rest",[],[]]]],["Enero 2027","25/01 – 31/01","Bloque 6 - SALA - SEMANAS PICO (8-31 ene)","SEMANAS CLAVE. Calidad > volumen. Cuidar sueño y nutrición. NO entrenes fuerza el día antes de partido importante.",[["Lunes","25/01","GYM A - ⭐⭐ Salidas reactivas + fuerza","gym",[108,288,289,290,271,291],[0,0,0,0,0,0]],["Martes","26/01","⭐⭐ CARRERA - Aceleración primeros pasos","acc",[27,214,155,215,216,217],[0,0,0,0,0,0]],["Miércoles","27/01","GYM B - Potencia horizontal","gym",[294,295,296,297,278,280,193],[0,0,0,0,0,0,0]],["Jueves","28/01","⭐ CARRERA - Reactiva + agilidad","run",[27,155,292,293],[0,0,0,0]],["Viernes","29/01","GYM C - Salidas 5m + asimétrico","gym",[298,299,300,301,302,303,304],[0,0,0,0,0,0,0]],["Sábado","30/01","Descanso / Hockey / Movilidad","rest",[],[]],["Domingo","31/01","Descanso / Hockey / Movilidad","rest",[],[]]]],["Febrero 2027","01/02 – 07/02","Bloque 6 - Sala (mantenimiento final)","Mantener velocidad y potencia. Escucha al cuerpo.",[["Lunes","01/02","GYM A - Potencia + salida reactiva","gym",[108,288,289,290,271,291],[0,0,0,0,0,0]],["Martes","02/02","Descanso / Hockey / Movilidad","rest",[],[]],["Miércoles","03/02","GYM B - Potencia horizontal","gym",[294,295,296,297,278,280,193],[0,0,0,0,0,0,0]],["Jueves","04/02","⭐ CARRERA - Aceleración","acc",[27,155,292,293],[0,0,0,0]],["Viernes","05/02","GYM C - Salidas 5m","gym",[298,299,300,301,302,303,304],[0,0,0,0,0,0,0]],["Sábado","06/02","Descanso / Hockey / Movilidad","rest",[],[]],["Domingo","07/02","Descanso / Hockey / Movilidad","rest",[],[]]]],["Febrero 2027","08/02 – 14/02","Bloque 6 - Sala (mantenimiento final)","Mantener velocidad y potencia. Escucha al cuerpo.",[["Lunes","08/02","GYM A - Potencia + salida reactiva","gym",[108,288,289,290,271,291],[0,0,0,0,0,0]],["Martes","09/02","Descanso / Hockey / Movilidad","rest",[],[]],["Miércoles","10/02","GYM B - Potencia horizontal","gym",[294,295,296,297,278,280,193],[0,0,0,0,0,0,0]],["Jueves","11/02","⭐ CARRERA - Aceleración","acc",[27,155,292,293],[0,0,0,0]],["Viernes","12/02","GYM C - Salidas 5m","gym",[298,299,300,301,302,303,304],[0,0,0,0,0,0,0]],["Sábado","13/02","Descanso / Hockey / Movilidad","rest",[],[]],["Domingo","14/02","Descanso / Hockey / Movilidad","rest",[],[]]]],["Febrero 2027","15/02 – 21/02","Bloque 6 - Sala (mantenimiento final)","Mantener velocidad y potencia. Escucha al cuerpo.",[["Lunes","15/02","GYM A - Potencia + salida reactiva","gym",[108,288,289,290,271,291],[0,0,0,0,0,0]],["Martes","16/02","Descanso / Hockey / Movilidad","rest",[],[]],["Miércoles","17/02","GYM B - Potencia horizontal","gym",[294,295,296,297,278,280,193],[0,0,0,0,0,0,0]],["Jueves","18/02","⭐ CARRERA - Aceleración","acc",[27,155,292,293],[0,0,0,0]],["Viernes","19/02","GYM C - Salidas 5m","gym",[298,299,300,301,302,303,304],[0,0,0,0,0,0,0]],["Sábado","20/02","Descanso / Hockey / Movilidad","rest",[],[]],["Domingo","21/02","Descanso / Hockey / Movilidad","rest",[],[]]]],["Febrero 2027","22/02 – 28/02","Bloque 6 - Sala (mantenimiento final)","Mantener velocidad y potencia. Escucha al cuerpo.",[["Lunes","22/02","GYM A - Potencia + salida reactiva","gym",[108,288,289,290,271,291],[0,0,0,0,0,0]],["Martes","23/02","Descanso / Hockey / Movilidad","rest",[],[]],["Miércoles","24/02","GYM B - Potencia horizontal","gym",[294,295,296,297,278,280,193],[0,0,0,0,0,0,0]],["Jueves","25/02","⭐ CARRERA - Aceleración","acc",[27,155,292,293],[0,0,0,0]],["Viernes","26/02","GYM C - Salidas 5m","gym",[298,299,300,301,302,303,304],[0,0,0,0,0,0,0]],["Sábado","27/02","Descanso / Hockey / Movilidad","rest",[],[]],["Domingo","28/02","Descanso / Hockey / Movilidad","rest",[],[]]]]]};
+
+const KEY = "hockey:registro";
+const DIAS = ["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"];
+const CORTO = ["L","M","X","J","V","S","D"];
+const TIPO = {
+  gym:  { label: "Fuerza",        c: "#4A8FD4" },
+  bw:   { label: "Peso corporal", c: "#4AB8A0" },
+  run:  { label: "Carrera",       c: "#57B87A" },
+  acc:  { label: "Velocidad",     c: "#E8A33D" },
+  rsa:  { label: "RSA",           c: "#A97BE0" },
+  done: { label: "Hecho",         c: "#7C8B93" },
+  rest: { label: "Descanso",      c: "#3A4C56" },
+};
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, (c) => (
+    { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]
+  ));
+}
+
+function ejercicio(i) {
+  const c = DATA.C[i];
+  return {
+    nombre: DATA.X[c[0]], kg: c[1], series: c[2], reps: c[3],
+    nota: DATA.N[c[4]], video: DATA.L[c[5]], sustituido: c[6] === 1,
+  };
+}
+
+function parseFecha(f) {
+  const m = /^(\d{2})\/(\d{2})$/.exec(f || "");
+  if (!m) return null;
+  return { d: +m[1], m: +m[2] };
+}
+
+// --------------------------------------------------------------
+// Estado y almacenamiento — localStorage normal del navegador.
+// Al ser síncrono, no hace falta esperar ni "vaciar" nada antes
+// de cerrar la página: cada cambio se escribe en el momento.
+// --------------------------------------------------------------
+let almacenDisponible = true;
+try {
+  const t = "__test__";
+  localStorage.setItem(t, "1");
+  localStorage.removeItem(t);
+} catch (e) {
+  almacenDisponible = false;
+}
+
+const estado = { semana: 0, registro: null };
+
+function estadoInicial() {
+  const semilla = { hecho: {}, kg: {} };
+  DATA.W.forEach((w, wi) =>
+    w[4].forEach((s, si) =>
+      (s[5] || []).forEach((ok, ei) => {
+        if (ok) semilla.hecho[`${wi}.${si}.${ei}`] = 1;
+      })
+    )
+  );
+  let guardado = null;
+  if (almacenDisponible) {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (raw) guardado = JSON.parse(raw);
+    } catch (e) { /* nada guardado aún, o dato dañado */ }
+  }
+  estado.registro = guardado
+    ? { hecho: { ...semilla.hecho, ...guardado.hecho }, kg: { ...guardado.kg } }
+    : semilla;
+
+  const hoy = new Date();
+  const dd = hoy.getDate(), mm = hoy.getMonth() + 1;
+  let mejor = 0, dif = 1e9;
+  DATA.W.forEach((w, wi) => {
+    const f = parseFecha((w[1] || "").split("–")[0].trim());
+    if (!f) return;
+    const delta = Math.abs((f.m - mm) * 31 + (f.d - dd));
+    if (delta < dif) { dif = delta; mejor = wi; }
+  });
+  estado.semana = mejor;
+}
+
+function marcarIndicador(ok) {
+  const el = document.getElementById("indicador-guardado");
+  if (!el) return;
+  el.textContent = ok ? "" : "no se pudo guardar en este navegador";
+  el.className = ok ? "hk-guardando" : "hk-error";
+}
+
+function persistir() {
+  if (!almacenDisponible) { marcarIndicador(false); return; }
+  try {
+    localStorage.setItem(KEY, JSON.stringify(estado.registro));
+    marcarIndicador(true);
+  } catch (e) {
+    console.error("No se pudo guardar", e);
+    marcarIndicador(false);
+  }
+}
+
+function marcar(id) {
+  const h = { ...estado.registro.hecho };
+  if (h[id]) delete h[id]; else h[id] = 1;
+  estado.registro = { ...estado.registro, hecho: h };
+  persistir();
+  render();
+}
+
+function anotarKg(id, valor) {
+  estado.registro.kg[id] = valor;
+  persistir();
+  // Sin re-render aquí: perdería el foco y la posición del cursor
+  // mientras escribes. Solo se actualiza el indicador de guardado.
+}
+
+// --------------------------------------------------------------
+// Ficha (modal de aclaración)
+// --------------------------------------------------------------
+function abrirFicha(ci, id) {
+  const e = ejercicio(ci);
+  const valor = estado.registro.kg[id] ?? e.kg;
+  const capa = document.getElementById("capa-ficha");
+  capa.innerHTML = `
+    <div class="hk-velo" data-accion="cerrar-ficha">
+      <div class="hk-ficha" data-accion="ficha-cuerpo" role="dialog" aria-modal="true" aria-label="Aclaración de ${esc(e.nombre)}">
+        <div class="hk-ficha-asa"></div>
+        <h3 class="hk-ficha-tit">${e.sustituido ? '<span class="hk-sust">◆</span>' : ''}${esc(e.nombre)}</h3>
+        <p class="hk-ficha-presc"><b>${esc(e.series)}</b> × ${esc(e.reps)}
+          <span class="hk-ficha-kg">${esc(valor)}</span></p>
+        ${e.nota
+          ? `<p class="hk-ficha-nota">${esc(e.nota)}</p>`
+          : `<p class="hk-ficha-vacia">Este ejercicio no lleva aclaración.</p>`}
+        ${e.video
+          ? `<a class="hk-video" href="${esc(e.video)}" target="_blank" rel="noopener noreferrer">Ver vídeo del ejercicio</a>`
+          : ''}
+        <button class="hk-ficha-cerrar" data-accion="cerrar-ficha">Cerrar</button>
+      </div>
+    </div>`;
+  capa.querySelector(".hk-ficha-cerrar").focus();
+}
+function cerrarFicha() {
+  document.getElementById("capa-ficha").innerHTML = "";
+}
+
+// --------------------------------------------------------------
+// Render de la semana actual
+// --------------------------------------------------------------
+function render() {
+  const raiz = document.getElementById("raiz");
+  if (!estado.registro) {
+    raiz.innerHTML = `<div class="hk-carga">Abriendo el plan…</div>`;
+    return;
+  }
+
+  const w = DATA.W[estado.semana];
+  const [mes, rango, etiqueta, notaSemana, sesiones] = w;
+
+  let totalW = 0, hechosW = 0;
+  sesiones.forEach((s, si) => {
+    (s[4] || []).forEach((_, ei) => {
+      totalW++;
+      if (estado.registro.hecho[`${estado.semana}.${si}.${ei}`]) hechosW++;
+    });
+  });
+  const pctW = totalW ? Math.round((hechosW / totalW) * 100) : 0;
+
+  const porDia = DIAS.map((d) => {
+    const si = sesiones.findIndex((s) => s[0] === d);
+    if (si < 0) return { estadoDia: "vacio" };
+    const s = sesiones[si];
+    if (s[3] === "rest") return { estadoDia: "descanso", si };
+    const n = (s[4] || []).length;
+    const h = (s[4] || []).filter((_, ei) => estado.registro.hecho[`${estado.semana}.${si}.${ei}`]).length;
+    return { estadoDia: n && h === n ? "completo" : h ? "parcial" : "pendiente", si, c: TIPO[s[3]].c };
+  });
+
+  let html = `
+  <header class="hk-top">
+    <div class="hk-nav">
+      <button class="hk-flecha" data-accion="prev" ${estado.semana === 0 ? "disabled" : ""} aria-label="Semana anterior">‹</button>
+      <div class="hk-cab">
+        <div class="hk-mes">${esc(mes)}</div>
+        <div class="hk-rango">${esc(rango)}</div>
+      </div>
+      <button class="hk-flecha" data-accion="next" ${estado.semana === DATA.W.length - 1 ? "disabled" : ""} aria-label="Semana siguiente">›</button>
+    </div>
+    <div class="hk-etiqueta">${esc(etiqueta)}</div>
+    <div class="hk-tira">
+      ${porDia.map((p, i) => `
+        <button class="hk-dia hk-dia-${p.estadoDia}" ${p.c ? `style="--dc:${p.c}"` : ""}
+                ${p.si != null ? `data-accion="jump" data-si="${p.si}"` : ""}>
+          <span class="hk-dia-letra">${CORTO[i]}</span><span class="hk-punto"></span>
+        </button>`).join("")}
+    </div>
+    <div class="hk-barra" role="progressbar" aria-valuenow="${pctW}" aria-valuemin="0" aria-valuemax="100">
+      <div class="hk-barra-int" style="width:${pctW}%"></div>
+    </div>
+    <div class="hk-resumen">
+      <span class="hk-cifra">${hechosW}</span>
+      <span class="hk-de">de ${totalW} ejercicios</span>
+      <span id="indicador-guardado" class="hk-guardando"></span>
+    </div>
+  </header>`;
+
+  if (notaSemana) html += `<p class="hk-nota-semana">${esc(notaSemana)}</p>`;
+
+  html += `<main>`;
+  sesiones.forEach((s, si) => {
+    const [dia, fecha, titulo, tipo, ejs] = s;
+    if (tipo === "rest" || !ejs || ejs.length === 0) {
+      html += `
+      <section id="s${si}" class="hk-ses hk-ses-rest">
+        <div class="hk-ses-cab"><span class="hk-ses-dia">${dia} ${fecha}</span></div>
+        <p class="hk-rest-txt">${esc(titulo)}</p>
+      </section>`;
+      return;
+    }
+    const n = ejs.length;
+    const h = ejs.filter((_, ei) => estado.registro.hecho[`${estado.semana}.${si}.${ei}`]).length;
+    const completa = h === n;
+    const tc = TIPO[tipo].c;
+
+    html += `
+      <section id="s${si}" class="hk-ses ${completa ? "hk-ses-ok" : ""}" style="--tc:${tc}">
+        <div class="hk-ses-cab">
+          <div><span class="hk-ses-dia">${dia} ${fecha}</span><h2 class="hk-ses-tit">${esc(titulo)}</h2></div>
+          <div class="hk-ses-cont">${h}/${n}</div>
+        </div>
+        <ol class="hk-lista">`;
+
+    ejs.forEach((ci, ei) => {
+      const e = ejercicio(ci);
+      const id = `${estado.semana}.${si}.${ei}`;
+      const ok = !!estado.registro.hecho[id];
+      const valor = estado.registro.kg[id] ?? e.kg;
+      const tieneFicha = !!(e.nota || e.video);
+      html += `
+        <li class="hk-ej ${ok ? "hk-ej-ok" : ""}">
+          <div class="hk-ej-fila">
+            <button class="hk-check" data-accion="marcar" data-id="${id}" aria-pressed="${ok}" aria-label="Marcar ${esc(e.nombre)}">
+              <span class="hk-check-marca"></span>
+            </button>
+            <div class="hk-ej-cuerpo">
+              <p class="hk-ej-nombre">${e.sustituido ? '<span class="hk-sust" title="Ejercicio sustituido">◆</span>' : ''}${esc(e.nombre)}</p>
+              <div class="hk-ej-datos">
+                <span class="hk-presc"><b>${esc(e.series)}</b> × ${esc(e.reps)}</span>
+                <input class="hk-kg" data-kg-id="${id}" value="${esc(valor)}" aria-label="Carga de ${esc(e.nombre)}" spellcheck="false" autocomplete="off">
+                ${tieneFicha ? `<button class="hk-btn-nota" data-accion="nota" data-ci="${ci}" data-id="${id}" aria-label="Ver aclaración de ${esc(e.nombre)}">nota</button>` : ""}
+              </div>
+            </div>
+          </div>
+        </li>`;
+    });
+    html += `</ol></section>`;
+  });
+  html += `</main>
+  <footer class="hk-pie">Plan de hockey · ${DATA.W.length} semanas · mayo 2026 a febrero 2027</footer>`;
+
+  raiz.innerHTML = html;
+}
+
+// --------------------------------------------------------------
+// Delegación de eventos: un solo listener, no hace falta
+// reengancharlo cada vez que se regenera el HTML.
+// --------------------------------------------------------------
+document.addEventListener("click", (ev) => {
+  const el = ev.target.closest("[data-accion]");
+  if (!el) return;
+  const accion = el.dataset.accion;
+  if (accion === "prev") { estado.semana = Math.max(0, estado.semana - 1); render(); }
+  else if (accion === "next") { estado.semana = Math.min(DATA.W.length - 1, estado.semana + 1); render(); }
+  else if (accion === "jump") {
+    document.getElementById(`s${el.dataset.si}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  else if (accion === "marcar") { marcar(el.dataset.id); }
+  else if (accion === "nota") { abrirFicha(+el.dataset.ci, el.dataset.id); }
+  else if (accion === "cerrar-ficha") { cerrarFicha(); }
+});
+
+document.addEventListener("input", (ev) => {
+  if (ev.target.matches("[data-kg-id]")) {
+    anotarKg(ev.target.dataset.kgId, ev.target.value);
+  }
+});
+
+document.addEventListener("keydown", (ev) => {
+  if (ev.key === "Escape") cerrarFicha();
+});
+
+// --------------------------------------------------------------
+// Arranque
+// --------------------------------------------------------------
+estadoInicial();
+render();
+</script>
+</body>
+</html>
